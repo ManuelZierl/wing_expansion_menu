@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/svg.js/2.6.6/svg.min.js"></script>
+    <title>Wing-Expansion-Menu</title>
+    <style>
+        body {
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body style="">
+<div id="drawing"></div>
+
+<script>
+    const element_heigth = 30;
+    const alpha = 1;
+    const epsilon = 0;
+    const lvl_size = [5, 8, 10, 3];
+    let len = window.innerWidth / (lvl_size[0] + (lvl_size.length - 2));
+
+    const openTime = 300;
+    const animate = true;
+
+    const normalcolor = "#005661";
+    const textcolor = "#ffffff";
+    const hovercolor = "#ff484a";
+
+
+    function makeLabel(r, prn)
+    {
+        if (r == lvl_size)
+        {
+            return [];
+        }
+        let out = [];
+        for (let i = 0; i < lvl_size[r]; i++)
+        {
+            out.push ([(prn + "." + i).substring (1), makeLabel (r + 1, prn + "." + i)]);
+        }
+
+        return out
+    }
+
+    let label = makeLabel (0, "");
+
+    const hover = function (event, nest, isRoot)
+    {
+        nest.front ();
+        nest.children ()[0].children ()[1].animate (openTime).attr ({fill: hovercolor});
+        for (i = 1; i < nest.children ().length; i++)
+        {
+            nest.children ()[i].children ()[0].style ("visibility: visible");
+        }
+
+    };
+    const moveM = function (event, nest, isRoot)
+    {
+        if (isRoot == false)
+        {
+            if (animate == true)
+            {
+
+                points = nest.children ()[0].children ()[0].array ().value;
+                horizontal = (event.clientX - nest.children ()[0].x () ) / len;
+                if (nest.children ()[0].children ()[0].node.getAttribute ("active") == "false" && horizontal < 1)
+                {
+                    return;
+                }
+                nest.children ()[0].children ()[0].plot (points);
+
+                if (horizontal > 1)
+                {
+                    horizontal = 1
+                }
+
+                let mult = 1;
+                if (epsilon > -1)
+                {
+                    childs = nest.children ().length;
+                    if (childs == 1)
+                    {
+                        childs = 4
+                    }
+                    mult = (childs - 2);
+                }
+
+                console.log (mult);
+
+                points[1][2] = parseFloat (points[0][2]) - alpha * (element_heigth * alpha * horizontal);
+                points[2][2] = parseFloat (points[3][6]) + alpha * ((mult * element_heigth * horizontal) - (element_heigth * alpha * horizontal));
+                points[3][2] = parseFloat (points[3][6]) + alpha * (((parseFloat (points[2][2]) - parseFloat (points[3][6])) * 2 / 3  ) * epsilon);
+                points[3][4] = parseFloat (points[3][6]) + alpha * (((parseFloat (points[2][2]) - parseFloat (points[3][6])) * 1 / 3  ) * epsilon);
+                let str = "";
+                for (i = 0; i < points.length; i++)
+                {
+                    for (j = 0; j < points[i].length; j++)
+                    {
+                        str += points[i][j] + " ";
+                    }
+                }
+                if (nest.children ()[0].children ()[0].node.getAttribute ("active") == "null")
+                {
+                    nest.children ()[0].children ()[0].animate (openTime).plot (str);
+                    nest.children ()[0].children ()[0].node.setAttribute ("active", "false");
+                    setInterval (function ()
+                    {
+                        if (nest.children ()[0].children ()[0].node.getAttribute ("active") == "false")
+                            nest.children ()[0].children ()[0].node.setAttribute ("active", "true");
+                    }, openTime);
+                }
+                else
+                {
+                    nest.children ()[0].children ()[0].plot (str);
+                }
+
+            }
+            else
+            {
+                nest.children ()[0].children ()[0].animate (openTime).attr ({fill: hovercolor, opacity: "0.6"});
+            }
+        }
+    };
+
+
+    const leave = function (event, nest, isRoot)
+    {
+
+        nest.children ()[0].children ()[0].stop ();
+        nest.children ()[0].children ()[0].node.setAttribute ("active", "null");
+        nest.children ()[0].children ()[1].stop ();
+        nest.children ()[0].children ()[1].attr ({fill: normalcolor});
+
+        nest.front ();
+        for (i = 1; i < nest.children ().length; i++)
+        {
+
+            nest.children ()[i].children ()[0].style ("visibility: hidden");
+            nest.children ()[i].children ()[0].finish ();
+        }
+
+        if (isRoot == false)
+        {
+            let points = nest.children ()[0].children ()[0].array ().value;
+
+
+            points[1][2] = parseFloat (points[0][2]);
+            points[2][2] = parseFloat (points[3][6]);
+            points[3][2] = parseFloat (points[3][6]);
+            points[3][4] = parseFloat (points[3][6]);
+            let str = "";
+            for (i = 0; i < points.length; i++)
+            {
+                for (j = 0; j < points[i].length; j++)
+                {
+                    str += points[i][j] + " ";
+                }
+            }
+            nest.children ()[0].children ()[0].plot (str);
+        }
+    };
+
+    const makePolygonString = function ()
+    {
+        arrayPoints = [];
+
+        arrayPoints.push ("M");
+        arrayPoints.push (0);
+        arrayPoints.push (0);
+        arrayPoints.push (len);
+        arrayPoints.push (0);
+        arrayPoints.push (len);
+        arrayPoints.push (element_heigth);
+
+        arrayPoints.push ("C");
+        arrayPoints.push (2 / 3 * len);
+        arrayPoints.push (element_heigth);
+        arrayPoints.push (1 / 3 * len);
+        arrayPoints.push (element_heigth);
+
+        arrayPoints.push (0);
+        arrayPoints.push (element_heigth);
+        arrayPoints.push ("Z");
+
+        let str = "";
+        for (i = 0; i < arrayPoints.length; i++)
+        {
+            str += arrayPoints[i] + " ";
+        }
+
+        return str
+    };
+
+    let count = 0;
+    function makeMenu(nest, r, x, y, label)
+    {
+
+        count += 1;
+        if (r < lvl_size.length)
+        {
+            for (let i = 0; i < lvl_size[r]; i++)
+            {
+                let down_nest = nest.nested ();
+                down_nest.style ('cursor', 'pointer');
+                let group = down_nest.group ();
+                let path = group.path (makePolygonString ()).fill (normalcolor).stroke ({width: 1});
+                path.attr ({fill: hovercolor, opacity: "0.6"});
+                path.node.setAttribute ("active", "null");
+
+                let txt = "";
+
+
+                if (label != undefined && i < label.length)
+                {
+                    txt = label[i][0];
+                }
+                group.polygon ('0 0 ' + len + ' 0 ' + len + ' ' + element_heigth + " 0" + ' ' + element_heigth).fill (normalcolor).stroke ({width: 1});
+                let text = group.text ("" + txt);
+                text.move (len / 15, element_heigth / 3);
+                text.font ({
+                    family: 'Helvetica'
+                    , size: 15
+                    , weight: 'bold'
+                });
+
+                text.node.childNodes[0].style.fill = textcolor;
+                if (r == 0)
+                {
+                    group.move (len * i, 0);
+                    down_nest.on ("mouseover", v => hover (event, down_nest, true))
+                        .on ("mouseleave", v => leave (event, down_nest, true))
+                        .on ("click", v => click (event, down_nest));
+
+                    makeMenu (down_nest, r + 1, len * i, 0, label[i][1]);
+                }
+                else
+                {
+                    let xtemp = 0;
+                    let ytemp = 0;
+                    if (r == 1)
+                    {
+                        xtemp = x;
+                        ytemp = y + element_heigth * (i + 1);
+                        group.move (xtemp, ytemp);
+                    }
+                    else
+                    {
+                        xtemp = x + len;
+                        ytemp = y + (element_heigth * (i)) - (element_heigth * alpha);
+
+                        group.move (xtemp, ytemp);
+
+                    }
+
+                    down_nest.on ("mouseover", v => hover (event, down_nest, false))
+                        .on ("mouseleave", v => leave (event, down_nest, false))
+                        .on ("mousemove", v => moveM (event, down_nest, false))
+                        .on ("click", v => click (event, down_nest));
+                    group.style ("visibility: hidden");
+
+
+                    if (label == undefined || label[i] == undefined || label[i].length == 0)
+                    {
+                        makeMenu (down_nest, r + 1, xtemp, ytemp, []);
+                    }
+                    else
+                    {
+                        makeMenu (down_nest, r + 1, xtemp, ytemp, label[i][1]);
+                    }
+
+
+                }
+            }
+        }
+    }
+
+    let draw = SVG ('drawing').size (window.innerWidth, window.innerHeight);
+    makeMenu (draw, 0, 0, 0, label);
+
+    for (i = 0; i < draw.children ().length; i++)
+        draw.children ()[i].move (0, (lvl_size.length - 3) * element_heigth)
+
+</script>
+</body>
+</html>
