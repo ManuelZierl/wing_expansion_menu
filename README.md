@@ -5,7 +5,7 @@ menu should facilitate the selection of menu items which are more likely due to 
 
 <img src="https://github.com/ManuelZierl/wing_expansion_menu/blob/master/Figure_2.jpg" alt="drawing" width="500"/>
 
-View this demo here: <a target="_blank" href="http://htmlpreview.github.io/?https://github.com/ManuelZierl/wing_expansion_menu/blob/master/WEM_Demo.html"> Demo</a>
+View this demo here: <a target="_blank" href="https://rawcdn.githack.com/ManuelZierl/wing_expansion_menu/6a1418f75ba51bcd83161b37bb47ee2579b6d008/WEM_Demo.html"> Demo</a>
 
 A user study of a WEM against a standard pull-down menu showed an average improvement of 18.63% in user interaction speed. A second user study, which evaluated one of the significant innovations of the WEM compared to a similar approach, showed an average improvement of 7.01% in user interaction speed.
 
